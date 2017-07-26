@@ -32,6 +32,17 @@ float wheelRotation = 0;
 float encodeRotations = 0;
 float X2 = 0, Y1 = 0, X1 = 0, threshold = 15;
 float gyroInc = 0;
+float M_PI = 3.14159265359; //pi
+float wheelSize = 4; //in Inches, mec
+float wheelCircumference = wheelSize * M_PI; //calculate wheel size
+float distanceTemp = 0;
+float distanceFinal = 0;
+float accelerometerDistanceX = 0;
+float accelerometerDistanceY = 0;
+float accelerometerVelocityX = 0;
+float accelerometerVelocityY = 0;
+float accelerometerBiasX = 0;
+float accelerometerBiasY = 0;
 int i = 0;
 
 //functions
@@ -66,6 +77,50 @@ void driveGyroCorrection() { //ensures that the robot is going as streight as cu
 	}
 }
 
+void measureDistanceEncoder() { //measures distance using encoder
+	distanceTemp = 0; //clears temp distance
+	wheelRotation = 0; //clears out old wheel rotations
+	if (SensorValue[leftEncode] > SensorValue[rightEncode]) {
+		wheelRotation = SensorValue[leftEncode] - SensorValue[rightEncode];
+		wheelRotation = SensorValue[rightEncode] + wheelRotation;
+		} else if (SensorValue[leftEncode] < SensorValue[rightEncode]) {
+		wheelRotation = SensorValue[rightEncode] - SensorValue[leftEncode];
+		wheelRotation = SensorValue[leftEncode] + wheelRotation;
+		} else {
+		wheelRotation = SensorValue[rightEncode];
+	}
+	distanceTemp = (wheelRotation / 360) * wheelCircumference;
+	distanceFinal = distanceFinal + distanceTemp;
+}
+
+void measureDistanceAccelerometer() { //measures distance using accelerometer
+	accelerometerVelocityX = (SensorValue[AccelerometerX] - accelerometerBiasX) * 0.001;
+	accelerometerVelocityY = (SensorValue[AccelerometerY] - accelerometerBiasY) * 0.001;
+	accelerometerDistanceX = accelerometerVelocityX * 0.001;
+	accelerometerDistanceY = accelerometerVelocityY * 0.001;
+}
+
+bool checkIfMoving() { //makes sure robot is not stuck
+	measureDistanceAccelerometer();
+	measureDistanceEncoder();
+	if((accelerometerDistanceX > 0 && distanceFinal > 0) || (accelerometerDistanceY > 0 && distanceFinal > 0)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+void clearDistance() {
+	distanceTemp = 0;
+	distanceFinal = 0;
+	wheelRotation = 0;
+}
+
+void driveToDistance(float distanceIN) { //measures in inches
+	clearDistance();
+	//measureDistance()
+}
+
 
 void moveToRotation(float rot) { // rotates to selected rotation. -180 <-> 180 (eg: 43 or -43)
 	stopRobot(); //stops robot
@@ -95,8 +150,8 @@ void updateStraight() { //sets straight variable to gyro info
 	}
 }
 
-
-void moveToWheelRotation(float wrot) { //multiplied by 360 so each (1) rotation would be a full wheel rotation, not 1 drgree
+//temp
+void moveToWheelRotation(float wrot) { //multiplied by 360 so each (1) rotation would be a full wheel rotation, not 1 drgree 
 	stopRobot(); //stops robot
 	X2 = 0; //clears out any old driving information
 	Y1 = 0;
@@ -178,6 +233,14 @@ void pre_auton() //runs before robot is ready
 	displayLCDCenteredString(0, "Calibrating...");
 	for(i=0;i<1024;i++) {
 		gyroInc = gyroInc + SensorValue[in8];
+		wait1Msec(1);
+	}
+	for(i=0;i<1024;i++) {
+		accelerometerBiasX = accelerometerBiasX + SensorValue[AccelerometerX];
+		wait1Msec(1);
+	}
+	for(i=0;i<1024;i++) {
+		accelerometerBiasY = accelerometerBiasY + SensorValue[AccelerometerY];
 		wait1Msec(1);
 	}
 	clearLCDLine(1);
