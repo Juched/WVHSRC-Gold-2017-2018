@@ -28,15 +28,10 @@ float straight = 0;
 float gyroRAW = 0;
 float gyroCalibrated = 0;
 float gyroSimple = 0;
-float wheelRotation = 0;
-float encodeRotations = 0;
 float X2 = 0, Y1 = 0, X1 = 0, threshold = 15;
 float gyroInc = 0;
 float M_PI = 3.14159265359; //pi
 float wheelSize = 4; //in Inches, mec
-float wheelCircumference = wheelSize * M_PI; //calculate wheel size
-float distanceTemp = 0;
-float distanceFinal = 0;
 float accelerometerDistanceX = 0;
 float accelerometerDistanceY = 0;
 float accelerometerVelocityX = 0;
@@ -47,7 +42,6 @@ float trackDistance = 0;
 float trackTheta = 0;
 float trackPositionX = 0;
 float trackPositionY = 0;
-float trackHeading = 0;
 float WHEEL_BASE = 0; //change this
 int i = 0;
 
@@ -71,6 +65,12 @@ void updateGyro() {
 	}
 }
 
+void updateStraight() { //sets straight variable to gyro info
+	if(X2 > threshold) { //makes sure that robot is not set to turn
+		straight = gyroSimple; //sets straight to gyro information
+	}
+}
+
 void driveGyroCorrection() { //ensures that the robot is going as streight as currently possible
 	if(abs(vexRT[Ch1]) < threshold) { // checks to see if the joy has been not been moved beond the threshold (to ensure it continues to work when the joy is stuck close to 0)
 		if(gyroSimple > straight) { // checks if the robot is heading straight (right)
@@ -83,61 +83,53 @@ void driveGyroCorrection() { //ensures that the robot is going as streight as cu
 	}
 }
 
-void measureDistanceEncoder() { //measures distance using encoder
-	distanceTemp = 0; //clears temp distance
-	wheelRotation = 0; //clears out old wheel rotations
-	if (SensorValue[leftEncode] > SensorValue[rightEncode]) {
-		wheelRotation = SensorValue[leftEncode] - SensorValue[rightEncode];
-		wheelRotation = SensorValue[rightEncode] + wheelRotation / 2;
-		} else if (SensorValue[leftEncode] < SensorValue[rightEncode]) {
-		wheelRotation = SensorValue[rightEncode] - SensorValue[leftEncode];
-		wheelRotation = SensorValue[leftEncode] + wheelRotation / 2;
-		} else {
-		wheelRotation = SensorValue[rightEncode];
-	}
-	distanceTemp = (wheelRotation / 360) * wheelCircumference;
-	distanceFinal = distanceFinal + distanceTemp;
-}
-
 void measureDistanceAccelerometer() { //measures distance using accelerometer
 	accelerometerVelocityX = (SensorValue[AccelerometerX] - accelerometerBiasX) * 0.001;
 	accelerometerVelocityY = (SensorValue[AccelerometerY] - accelerometerBiasY) * 0.001;
-	accelerometerDistanceX = accelerometerVelocityX * 0.001;
-	accelerometerDistanceY = accelerometerVelocityY * 0.001;
-}
-
-bool checkIfMoving() { //makes sure robot is not stuck
-	measureDistanceAccelerometer();
-	measureDistanceEncoder();
-	if((accelerometerDistanceX > 0 && distanceFinal > 0) || (accelerometerDistanceY > 0 && distanceFinal > 0)) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-void clearDistance() {
-	distanceTemp = 0;
-	distanceFinal = 0;
-	wheelRotation = 0;
-}
-
-void driveToDistance(float distanceIN) { //measures in inches
-	clearDistance();
-	//measureDistance()
+	accelerometerDistanceX += accelerometerVelocityX * 0.001;
+	accelerometerDistanceY += accelerometerVelocityY * 0.001;
 }
 
 void trackMovement() {
-	while(true) {
-		trackDistance = (SensorValue[leftEncode] + SensorValue[rightEncode]) / 2.0;
-		trackTheta += (SensorValue[leftEncode] - SensorValue[rightEncode]) / WHEEL_BASE;
-		trackPositionX += trackDistance * sin(trackTheta);
-		trackPositionY += trackDistance * cos(trackTheta);
-		trackHeading = trackTheta * (180.0/M_PI);
-		sleep(50);
-	}
+	trackDistance = (SensorValue[leftEncode] + SensorValue[rightEncode]) / 2.0;
+	trackTheta = (SensorValue[leftEncode] - SensorValue[rightEncode]) / WHEEL_BASE;
+	trackPositionX = trackDistance * sin(trackTheta);
+	trackPositionY = trackDistance * cos(trackTheta);
 }
 
+void goToPoint(int x, int y, int z) {//note: z == rotation
+	trackMovement();
+	measureDistanceAccelerometer();
+	updateGyro();
+	updateStraight();
+	if(x > trackPositionX) { //check
+		X1 = 127;
+		} else if(x < trackPositionX) {
+		X1 = -127;
+		} else {
+		X1 = 0;
+	}
+	if(y > trackPositionY) { //check
+		Y1 = 127;
+		} else if(y < trackPositionY) {
+		Y1 = -127;
+		} else {
+		Y1 = 0;
+	}
+	if(z > gyroSimple) { //check
+		X2 = 70;
+		} else if (z < gyroSimple) {
+		X2 = -70;
+		} else {
+		X2 = 0;
+	}
+	motor[frontRight] = Y1 - X2 - X1;
+	motor[backRight] =  Y1 - X2 + X1;
+	motor[frontLeft] = Y1 + X2 + X1;
+	motor[backLeft] =  Y1 + X2 - X1;
+
+
+}
 
 void moveToRotation(float rot) { // rotates to selected rotation. -180 <-> 180 (eg: 43 or -43)
 	stopRobot(); //stops robot
@@ -159,109 +151,6 @@ void moveToRotation(float rot) { // rotates to selected rotation. -180 <-> 180 (
 		motor[backLeft] =  Y1 + X2 - X1;
 	}
 	stopRobot(); //stops robot
-}
-
-void updateStraight() { //sets straight variable to gyro info
-	if(X2 > threshold) { //makes sure that robot is not set to turn
-		straight = gyroSimple; //sets straight to gyro information
-	}
-}
-
-//temp
-void moveToWheelRotation(float wrot) { //multiplied by 360 so each (1) rotation would be a full wheel rotation, not 1 drgree
-	stopRobot(); //stops robot
-	X2 = 0; //clears out any old driving information
-	Y1 = 0;
-	X1 = 0;
-	wheelRotation = 0; //clears out old wheel rotations
-	encodeRotations = 0; //clears out old encode rotations
-	while(encodeRotations <= wrot*360) { //while full turns are greater than the encoded rotation, if = X1 will be set to 0
-		updateGyro(); //gets new information from gyroscope
-		//finds average/median wheel rotations
-		if (SensorValue[leftEncode] > SensorValue[rightEncode]) {
-			wheelRotation = SensorValue[leftEncode] - SensorValue[rightEncode];
-			wheelRotation = SensorValue[rightEncode] + wheelRotation / 2;
-			} else if (SensorValue[leftEncode] < SensorValue[rightEncode]) {
-			wheelRotation = SensorValue[rightEncode] - SensorValue[leftEncode];
-			wheelRotation = SensorValue[leftEncode] + wheelRotation / 2;
-			} else {
-			wheelRotation = SensorValue[rightEncode];
-		}
-		encodeRotations = encodeRotations + wheelRotation; //keeps count of all roations
-		if(wrot*360 > 0) { //makes sure the robot turns the correct way
-			X1 = 127;
-			} else if(wrot*360 < 0){
-			X1 = -127;
-			} else {
-			X1 = 0;
-			encodeRotations = wrot*360 + 1; //ensures that while loop will stop correctly
-		}
-		if(wrot*360 == encodeRotations) { //checks if they are the same
-			encodeRotations = wrot*360 + 1; //ensures that while loop will stop correctly
-		}
-		driveGyroCorrection(); //helps robot to drive straight
-		motor[frontRight] = Y1 - X2 - X1; //moves/ turns the robot
-		motor[backRight] =  Y1 - X2 + X1;
-		motor[frontLeft] = Y1 + X2 + X1;
-		motor[backLeft] =  Y1 + X2 - X1;
-		updateStraight(); //updates with new straight value
-	}
-	X1 = 0; //helps to stop moving
-	stopRobot(); //stops robot
-}
-
-void moveTo(float rot, float wrot, int style) { //all in one solution for turning and driving in autonomous mode
-	stopRobot(); //stops robot
-	if (style == 0) { // rotates, then drives
-		moveToRotation(rot);
-		moveToWheelRotation(wrot);
-		} else if (style == 1) { // drives, then rotates
-		moveToWheelRotation(wrot);
-		moveToRotation(rot);
-		} else if (style == 2) { // drives half, then rotates, then drives other half
-		moveToWheelRotation(wrot/2);
-		moveToRotation(rot);
-		moveToWheelRotation(wrot/2);
-		} else { // idk
-
-	}
-	stopRobot(); //stops robot
-}
-
-void driveControlCode() {
-	while(true) { //run code multiple times
-		updateGyro();
-		//Create "deadzone" for Y1/Ch3
-		if(abs(vexRT[Ch3]) > threshold) {
-			Y1 = vexRT[Ch3];
-			} else {
-			Y1 = 0;
-		}
-		//Create "deadzone" for X1/Ch4
-		if(abs(vexRT[Ch4]) > threshold) {
-			X1 = vexRT[Ch4];
-			} else {
-			X1 = 0;
-		}
-		//Create "deadzone" for X2/Ch1
-		if(abs(vexRT[Ch1]) > threshold) {
-			X2 = vexRT[Ch1];
-			} else {
-			X2 = 0;
-		}
-		driveGyroCorrection();
-		//Remote Control Commands
-		motor[frontRight] = Y1 - X2 - X1;
-		motor[backRight] =  Y1 - X2 + X1;
-		motor[frontLeft] = Y1 + X2 + X1;
-		motor[backLeft] =  Y1 + X2 - X1;
-		//logRotation();
-		//logGyro();
-
-		updateStraight(); //check location, might have to be moved
-
-		wait1Msec(1);
-	}
 }
 
 
@@ -308,11 +197,11 @@ task autonomous() //program the robot to do stuff
 {
 	displayLCDCenteredString(0, "Autonomous"); //messages are fun :)
 	//while(true) { // might be needed, might not
-	moveTo(45, 10, 0); //testing code here and below
+	//moveTo(45, 10, 0); //testing code here and below
 	wait1Msec(2000);
-	moveTo(-45, -10, 2);
+	//moveTo(-45, -10, 2);
 	wait1Msec(2000);
-	moveTo(180, 15, 1); //testing code here and above
+	//moveTo(180, 15, 1); //testing code here and above
 	stopRobot(); //stops robot
 	//}
 }
@@ -320,12 +209,38 @@ task autonomous() //program the robot to do stuff
 
 task usercontrol() //drive the robot using a controller
 {
-	startTask(driveControlCode);   /* Comment out either of these two lines */
-  startTask(trackMovement);   /* to see a Task running individually.   */
 	stopRobot(); //stops robot
 	displayLCDCenteredString(0, "Driver Control");
-	while(true) {
-		wait1Msec(1);
+	while(true) { //run code multiple times
+		updateGyro();
+		//Create "deadzone" for Y1/Ch3
+		if(abs(vexRT[Ch3]) > threshold) {
+			Y1 = vexRT[Ch3];
+			} else {
+			Y1 = 0;
+		}
+		//Create "deadzone" for X1/Ch4
+		if(abs(vexRT[Ch4]) > threshold) {
+			X1 = vexRT[Ch4];
+			} else {
+			X1 = 0;
+		}
+		//Create "deadzone" for X2/Ch1
+		if(abs(vexRT[Ch1]) > threshold) {
+			X2 = vexRT[Ch1];
+			} else {
+			X2 = 0;
+		}
+		driveGyroCorrection();
+		//Remote Control Commands
+		motor[frontRight] = Y1 - X2 - X1;
+		motor[backRight] =  Y1 - X2 + X1;
+		motor[frontLeft] = Y1 + X2 + X1;
+		motor[backLeft] =  Y1 + X2 - X1;
+		//logRotation();
+		//logGyro();
+
+		updateStraight(); //check location, might have to be moved
 	}
 	stopRobot(); //stops robot
 }
