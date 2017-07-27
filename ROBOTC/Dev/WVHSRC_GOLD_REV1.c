@@ -151,7 +151,7 @@ void updateStraight() { //sets straight variable to gyro info
 }
 
 //temp
-void moveToWheelRotation(float wrot) { //multiplied by 360 so each (1) rotation would be a full wheel rotation, not 1 drgree 
+void moveToWheelRotation(float wrot) { //multiplied by 360 so each (1) rotation would be a full wheel rotation, not 1 drgree
 	stopRobot(); //stops robot
 	X2 = 0; //clears out any old driving information
 	Y1 = 0;
@@ -221,6 +221,7 @@ void pre_auton() //runs before robot is ready
 	bDisplayCompetitionStatusOnLcd = false;
 
 	stopRobot(); //stops robot
+	bLCDBacklight = true;
 	clearLCDLine(0);
 	clearLCDLine(1);
 	displayLCDCenteredString(0, "Prepping...");
@@ -229,6 +230,8 @@ void pre_auton() //runs before robot is ready
 	displayLCDCenteredString(1, "Gyro Engaging...");
 	SensorType[in8] = sensorGyro; //sets sensor port8 to gyro (rotation along/around y axis)
 	wait1Msec(2000); //gives time for gyro to init
+	SensorScale[in8] = 0; //change this
+	SensorFullCount[in8] = 0; //change this
 
 	displayLCDCenteredString(0, "Calibrating...");
 	for(i=0;i<1024;i++) {
