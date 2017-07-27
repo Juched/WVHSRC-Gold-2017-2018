@@ -96,29 +96,56 @@ void trackMovement() {
 	trackPositionX = trackDistance * sin(trackTheta);
 	trackPositionY = trackDistance * cos(trackTheta);
 }
-
-void goToPoint(int x, int y, int z) {//note: z == rotation
+void checkLocationNR() { //no return
 	trackMovement();
 	measureDistanceAccelerometer();
 	updateGyro();
 	updateStraight();
-	if(x > trackPositionX) { //check
+}
+
+
+float checkLocationX() { //returns X
+	trackMovement();
+	measureDistanceAccelerometer();
+	updateGyro();
+	updateStraight();
+	return trackPositionX;
+}
+
+float checkLocationY() { //returns Y
+	trackMovement();
+	measureDistanceAccelerometer();
+	updateGyro();
+	updateStraight();
+	return trackPositionY;
+}
+
+float checkLocationZ() { //returns Z
+	trackMovement();
+	measureDistanceAccelerometer();
+	updateGyro();
+	updateStraight();
+	return gyroSimple;
+}
+
+void goToPoint(float x, float y, float z) {//note: z == rotation, might not work
+	if(x > checkLocationX()) { //check
 		X1 = 127;
-		} else if(x < trackPositionX) {
+		} else if(x < checkLocationX()) {
 		X1 = -127;
 		} else {
 		X1 = 0;
 	}
-	if(y > trackPositionY) { //check
+	if(y > checkLocationY()) { //check
 		Y1 = 127;
-		} else if(y < trackPositionY) {
+		} else if(y < checkLocationY()) {
 		Y1 = -127;
 		} else {
 		Y1 = 0;
 	}
-	if(z > gyroSimple) { //check
+	if(z > checkLocationZ()) { //check
 		X2 = 70;
-		} else if (z < gyroSimple) {
+		} else if (z < checkLocationZ()) {
 		X2 = -70;
 		} else {
 		X2 = 0;
