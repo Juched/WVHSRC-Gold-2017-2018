@@ -91,10 +91,10 @@ void measureDistanceAccelerometer() { //measures distance using accelerometer
 }
 
 void trackMovement() {
-	trackDistance = (SensorValue[leftEncode] + SensorValue[rightEncode]) / 2.0;
-	trackTheta = (SensorValue[leftEncode] - SensorValue[rightEncode]) / WHEEL_BASE;
-	trackPositionX = trackDistance * sin(trackTheta);
-	trackPositionY = trackDistance * cos(trackTheta);
+	trackDistance = (SensorValue[leftEncode] + SensorValue[rightEncode]) / 2.0; //average the encoder values
+	trackTheta = (SensorValue[leftEncode] - SensorValue[rightEncode]) / WHEEL_BASE; //calculate angle from starting point
+	trackPositionX = trackDistance * sin(trackTheta); //find x value using trig (cos(theta) = xPos/d) == (xPos = cos(theta)*d)
+	trackPositionY = trackDistance * cos(trackTheta); //find y value using trig (sin(theta)=yPos/d) == (yPos=sin(theta)*d)
 }
 void checkLocationNR() { //no return
 	trackMovement();
