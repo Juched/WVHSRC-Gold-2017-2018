@@ -47,6 +47,7 @@ float trackDistance = 0;
 float trackTheta = 0;
 float trackPositionX = 0;
 float trackPositionY = 0;
+float trackHeading = 0;
 float WHEEL_BASE = 0; //change this
 int i = 0;
 
@@ -127,10 +128,14 @@ void driveToDistance(float distanceIN) { //measures in inches
 }
 
 void trackMovement() {
-	trackDistance = (SensorValue[leftEncode] + SensorValue[rightEncode]) / 2.0;
-	trackTheta = (SensorValue[leftEncode] - SensorValue[rightEncode]) / WHEEL_BASE;
-	trackPositionX = trackDistance * sin(trackTheta);
-	trackPositionY = trackDistance * cos(trackTheta);
+	while(true) {
+		trackDistance = (SensorValue[leftEncode] + SensorValue[rightEncode]) / 2.0;
+		trackTheta += (SensorValue[leftEncode] - SensorValue[rightEncode]) / WHEEL_BASE;
+		trackPositionX += trackDistance * sin(trackTheta);
+		trackPositionY += trackDistance * cos(trackTheta);
+		trackHeading = trackTheta * (180.0/M_PI);
+		sleep(50);
+	}
 }
 
 
@@ -223,6 +228,42 @@ void moveTo(float rot, float wrot, int style) { //all in one solution for turnin
 	stopRobot(); //stops robot
 }
 
+void driveControlCode() {
+	while(true) { //run code multiple times
+		updateGyro();
+		//Create "deadzone" for Y1/Ch3
+		if(abs(vexRT[Ch3]) > threshold) {
+			Y1 = vexRT[Ch3];
+			} else {
+			Y1 = 0;
+		}
+		//Create "deadzone" for X1/Ch4
+		if(abs(vexRT[Ch4]) > threshold) {
+			X1 = vexRT[Ch4];
+			} else {
+			X1 = 0;
+		}
+		//Create "deadzone" for X2/Ch1
+		if(abs(vexRT[Ch1]) > threshold) {
+			X2 = vexRT[Ch1];
+			} else {
+			X2 = 0;
+		}
+		driveGyroCorrection();
+		//Remote Control Commands
+		motor[frontRight] = Y1 - X2 - X1;
+		motor[backRight] =  Y1 - X2 + X1;
+		motor[frontLeft] = Y1 + X2 + X1;
+		motor[backLeft] =  Y1 + X2 - X1;
+		//logRotation();
+		//logGyro();
+
+		updateStraight(); //check location, might have to be moved
+
+		wait1Msec(1);
+	}
+}
+
 
 void pre_auton() //runs before robot is ready
 {
@@ -279,38 +320,12 @@ task autonomous() //program the robot to do stuff
 
 task usercontrol() //drive the robot using a controller
 {
+	startTask(driveControlCode);   /* Comment out either of these two lines */
+  startTask(trackMovement);   /* to see a Task running individually.   */
 	stopRobot(); //stops robot
 	displayLCDCenteredString(0, "Driver Control");
-	while(true) { //run code multiple times
-		updateGyro();
-		//Create "deadzone" for Y1/Ch3
-		if(abs(vexRT[Ch3]) > threshold) {
-			Y1 = vexRT[Ch3];
-			} else {
-			Y1 = 0;
-		}
-		//Create "deadzone" for X1/Ch4
-		if(abs(vexRT[Ch4]) > threshold) {
-			X1 = vexRT[Ch4];
-			} else {
-			X1 = 0;
-		}
-		//Create "deadzone" for X2/Ch1
-		if(abs(vexRT[Ch1]) > threshold) {
-			X2 = vexRT[Ch1];
-			} else {
-			X2 = 0;
-		}
-		driveGyroCorrection();
-		//Remote Control Commands
-		motor[frontRight] = Y1 - X2 - X1;
-		motor[backRight] =  Y1 - X2 + X1;
-		motor[frontLeft] = Y1 + X2 + X1;
-		motor[backLeft] =  Y1 + X2 - X1;
-		//logRotation();
-		//logGyro();
-
-		updateStraight(); //check location, might have to be moved
+	while(true) {
+		wait1Msec(1);
 	}
 	stopRobot(); //stops robot
 }
