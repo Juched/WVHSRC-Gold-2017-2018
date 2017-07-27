@@ -82,10 +82,10 @@ void measureDistanceEncoder() { //measures distance using encoder
 	wheelRotation = 0; //clears out old wheel rotations
 	if (SensorValue[leftEncode] > SensorValue[rightEncode]) {
 		wheelRotation = SensorValue[leftEncode] - SensorValue[rightEncode];
-		wheelRotation = SensorValue[rightEncode] + wheelRotation;
+		wheelRotation = SensorValue[rightEncode] + wheelRotation / 2;
 		} else if (SensorValue[leftEncode] < SensorValue[rightEncode]) {
 		wheelRotation = SensorValue[rightEncode] - SensorValue[leftEncode];
-		wheelRotation = SensorValue[leftEncode] + wheelRotation;
+		wheelRotation = SensorValue[leftEncode] + wheelRotation / 2;
 		} else {
 		wheelRotation = SensorValue[rightEncode];
 	}
