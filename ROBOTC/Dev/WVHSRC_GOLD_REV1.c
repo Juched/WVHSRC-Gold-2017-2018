@@ -163,10 +163,10 @@ void moveToWheelRotation(float wrot) { //multiplied by 360 so each (1) rotation 
 		//finds average/median wheel rotations
 		if (SensorValue[leftEncode] > SensorValue[rightEncode]) {
 			wheelRotation = SensorValue[leftEncode] - SensorValue[rightEncode];
-			wheelRotation = SensorValue[rightEncode] + wheelRotation;
+			wheelRotation = SensorValue[rightEncode] + wheelRotation / 2;
 			} else if (SensorValue[leftEncode] < SensorValue[rightEncode]) {
 			wheelRotation = SensorValue[rightEncode] - SensorValue[leftEncode];
-			wheelRotation = SensorValue[leftEncode] + wheelRotation;
+			wheelRotation = SensorValue[leftEncode] + wheelRotation / 2;
 			} else {
 			wheelRotation = SensorValue[rightEncode];
 		}
