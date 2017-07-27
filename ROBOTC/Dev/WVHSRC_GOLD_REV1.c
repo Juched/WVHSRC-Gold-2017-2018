@@ -43,6 +43,11 @@ float accelerometerVelocityX = 0;
 float accelerometerVelocityY = 0;
 float accelerometerBiasX = 0;
 float accelerometerBiasY = 0;
+float trackDistance = 0;
+float trackTheta = 0;
+float trackPositionX = 0;
+float trackPositionY = 0;
+float WHEEL_BASE = 0; //change this
 int i = 0;
 
 //functions
@@ -119,6 +124,13 @@ void clearDistance() {
 void driveToDistance(float distanceIN) { //measures in inches
 	clearDistance();
 	//measureDistance()
+}
+
+void trackMovement() {
+	trackDistance = (SensorValue[leftEncode] + SensorValue[rightEncode]) / 2.0;
+	trackTheta = (SensorValue[leftEncode] - SensorValue[rightEncode]) / WHEEL_BASE;
+	trackPositionX = trackDistance * sin(trackTheta);
+	trackPositionY = trackDistance * cos(trackTheta);
 }
 
 
