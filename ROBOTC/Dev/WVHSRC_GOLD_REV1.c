@@ -213,7 +213,7 @@ void selectRobotLocationOnField() { //might have to be in a startTask(TaskID), b
 			break;
 		}
 	}
-	setCorrectStartingPositionToTheOneThatWasSelected()
+	setCorrectStartingPositionToTheOneThatWasSelected();
 }
 
 void accessFieldArray(int x, int y) {
