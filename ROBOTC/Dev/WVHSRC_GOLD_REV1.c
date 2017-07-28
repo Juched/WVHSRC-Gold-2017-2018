@@ -47,19 +47,26 @@ float locationInArrayX = 0;
 float locationInArrayY = 0;
 int i = 0;
 int LCDClickCount = 0;
+const short leftButton = 1;
+const short centerButton = 2;
+const short rightButton = 4;
 
 //change variables below
 float blueLeftStartingX = 0;
 float blueLeftStartingY = 0;
+float blueLeftStartingTheta = 0;
 
 float blueRightStartingX = 0;
 float blueRightStartingY = 0;
+float blueRightStartingTheta = 0;
 
 float redLeftStartingX = 0;
 float redLeftStartingY = 0;
+float redLeftStartingTheta = 0;
 
 float redRightStartingX = 0;
 float redRightStartingY = 0;
+float redRightStartingTheta = 0;
 
 //temp
 int fieldArray[24][24] = {  // 0 = nothing. 1 = cone, 2 = mobile goal, 3 == stationary goal, 4 == scoring 24/6 (24 x 24, 6in padding) cone is almost 6in (5.68in), stationary goal = ~8in
@@ -99,6 +106,30 @@ void LCDButtonWaitForPress()
 {
 	while(nLCDButtons == 0){}
 	wait1Msec(5);
+}
+
+void setCorrectStartingPositionToTheOneThatWasSelected() { //dont ask
+	if(LCDClickCount == 0) {
+		trackPositionX = blueLeftStartingX;
+		trackPositionY = blueLeftStartingY;
+		trackTheta = blueLeftStartingTheta;
+		} else if (LCDClickCount == 1) {
+		trackPositionX = blueRightStartingX;
+		trackPositionY = blueRightStartingY;
+		trackTheta = blueRightStartingTheta;
+		} else if (LCDClickCount == 2) {
+		trackPositionX = redLeftStartingX;
+		trackPositionY = redLeftStartingY;
+		trackTheta = redLeftStartingTheta;
+		} else if (LCDClickCount == 3) {
+		trackPositionX = redRightStartingX;
+		trackPositionY = redRightStartingY;
+		trackTheta = redRightStartingTheta;
+		} else {
+		trackPositionX = blueLeftStartingX;
+		trackPositionY = blueLeftStartingY;
+		trackTheta = blueLeftStartingTheta;
+	}
 }
 
 void selectRobotLocationOnField() { //might have to be in a startTask(TaskID), but might not, we could just use a timer and when its up it chooses the default (blue,left)
@@ -188,14 +219,14 @@ void accessFieldArray(int x, int y) {
 }
 
 void updateLocationInArray(int x, int y) {
-	if((((locationInArrayX + 3) >= x) || ((locationInArrayX - 3) <= x)) && ((((locationInArrayY + 3) >= Y) || ((locationInArrayY - 3) <= Y)) { //checks if X and Y of robot is in current square, > < might be backwards
+	if((((locationInArrayX + 3) >= x) || ((locationInArrayX - 3) <= x)) && ((((locationInArrayY + 3) >= y) || ((locationInArrayY - 3) <= y)))) { //checks if X and Y of robot is in current square, > < might be backwards
 		//dont update?
-	} else { //if it isnt, update to the next square
-		if(((locationInArrayY + 3) >= Y) || ((locationInArrayY - 3) <= Y)) {
+		} else { //if it isnt, update to the next square
+		if(((locationInArrayY + 3) >= y) || ((locationInArrayY - 3) <= y)) {
 
-		} else if(((locationInArrayX + 3) >= X) || ((locationInArrayX - 3) <= X)) {
+			} else if(((locationInArrayX + 3) >= x) || ((locationInArrayX - 3) <= x)) {
 
-		} else { //error?
+			} else { //error?
 
 		}
 	}
