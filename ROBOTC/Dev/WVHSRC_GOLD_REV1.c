@@ -46,6 +46,20 @@ float WHEEL_BASE = 0; //change this
 float locationInArrayX = 0;
 float locationInArrayY = 0;
 int i = 0;
+int LCDClickCount = 0;
+
+//change variables below
+float blueLeftStartingX = 0;
+float blueLeftStartingY = 0;
+
+float blueRightStartingX = 0;
+float blueRightStartingY = 0;
+
+float redLeftStartingX = 0;
+float redLeftStartingY = 0;
+
+float redRightStartingX = 0;
+float redRightStartingY = 0;
 
 //temp
 int fieldArray[24][24] = {  // 0 = nothing. 1 = cone, 2 = mobile goal, 3 == stationary goal, 4 == scoring 24/6 (24 x 24, 6in padding) cone is almost 6in (5.68in), stationary goal = ~8in
@@ -74,6 +88,101 @@ int fieldArray[24][24] = {  // 0 = nothing. 1 = cone, 2 = mobile goal, 3 == stat
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
 };
+
+void LCDButtonWaitForRelease()
+{
+	while(nLCDButtons != 0){}
+	wait1Msec(5);
+}
+
+void LCDButtonWaitForPress()
+{
+	while(nLCDButtons == 0){}
+	wait1Msec(5);
+}
+
+void selectRobotLocationOnField() { //might have to be in a startTask(TaskID), but might not, we could just use a timer and when its up it chooses the default (blue,left)
+	clearLCDLine(0);
+	clearLCDLine(1);
+
+	while(nLCDButtons != centerButton)
+	{
+		//Switch case that allows the user to choose from 4 different options
+		switch(LCDClickCount){
+		case 0:
+			//Display first choice
+			displayLCDCenteredString(0, "Blue Left");
+			displayLCDCenteredString(1, "<		 Enter		>");
+			LCDButtonWaitForPress();
+			//Increment or decrement "count" based on button press
+			if(nLCDButtons == leftButton)
+			{
+				LCDButtonWaitForRelease();
+				LCDClickCount = 3;
+			}
+			else if(nLCDButtons == rightButton)
+			{
+				LCDButtonWaitForRelease();
+				LCDClickCount++;
+			}
+			break;
+		case 1:
+			//Display second choice
+			displayLCDCenteredString(0, "Blue Right");
+			displayLCDCenteredString(1, "<		 Enter		>");
+			LCDButtonWaitForPress();
+			//Increment or decrement "count" based on button press
+			if(nLCDButtons == leftButton)
+			{
+				LCDButtonWaitForRelease();
+				LCDClickCount--;
+			}
+			else if(nLCDButtons == rightButton)
+			{
+				LCDButtonWaitForRelease();
+				LCDClickCount++;
+			}
+			break;
+		case 2:
+			//Display third choice
+			displayLCDCenteredString(0, "Red Left");
+			displayLCDCenteredString(1, "<		 Enter		>");
+			LCDButtonWaitForPress();
+			//Increment or decrement "count" based on button press
+			if(nLCDButtons == leftButton)
+			{
+				LCDButtonWaitForRelease();
+				LCDClickCount--;
+			}
+			else if(nLCDButtons == rightButton)
+			{
+				LCDButtonWaitForRelease();
+				LCDClickCount++;
+			}
+			break;
+		case 3:
+			//Display fourth choice
+			displayLCDCenteredString(0, "Red Right");
+			displayLCDCenteredString(1, "<		 Enter		>");
+			LCDButtonWaitForPress();
+			//Increment or decrement "count" based on button press
+			if(nLCDButtons == leftButton)
+			{
+				LCDButtonWaitForRelease();
+				LCDClickCount--;
+			}
+			else if(nLCDButtons == rightButton)
+			{
+				LCDButtonWaitForRelease();
+				LCDClickCount = 0;
+			}
+			break;
+		default:
+			LCDClickCount = 0;
+			break;
+		}
+	}
+}
 
 void accessFieldArray(int x, int y) {
 }
