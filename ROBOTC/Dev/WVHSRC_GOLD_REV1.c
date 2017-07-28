@@ -46,6 +46,7 @@ float WHEEL_BASE = 0; //change this
 int i = 0;
 
 //temp
+int fieldArray[24][24] = {  // 0 = nothing. 1 = cone, 2 = mobile goal, 3 == stationary goal, 4 == scoring 24/6 (24 x 24, 6in padding) cone is almost 6in (5.68in), stationary goal = ~8in
    {0, 1, 2, 3} ,   /*  initializers for row indexed by 0 */
    {4, 5, 6, 7} ,   /*  initializers for row indexed by 1 */
    {8, 9, 10, 11}   /*  initializers for row indexed by 2 */
