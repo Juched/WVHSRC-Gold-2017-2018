@@ -45,6 +45,12 @@ float trackPositionY = 0;
 float WHEEL_BASE = 0; //change this
 int i = 0;
 
+//temp
+   {0, 1, 2, 3} ,   /*  initializers for row indexed by 0 */
+   {4, 5, 6, 7} ,   /*  initializers for row indexed by 1 */
+   {8, 9, 10, 11}   /*  initializers for row indexed by 2 */
+};
+
 //functions
 
 void stopRobot() {
