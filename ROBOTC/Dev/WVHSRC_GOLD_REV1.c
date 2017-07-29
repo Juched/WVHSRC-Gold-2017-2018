@@ -420,15 +420,15 @@ void pre_auton() //runs before robot is ready
 		wait1Msec(1);
 	}
 	clearLCDLine(1);
-	selectRobotLocationOnField() // asks for input to tell robot where it is
-	printTeamSide()
+	selectRobotLocationOnField(); // asks for input to tell robot where it is
+	printTeamSide();
 }
 
 
 task autonomous() //program the robot to do stuff
 {
 	displayLCDCenteredString(0, "Autonomous"); //messages are fun :)
-	printTeamSide()
+	printTeamSide();
 	//while(true) { // might be needed, might not
 	//moveTo(45, 10, 0); //testing code here and below
 	wait1Msec(2000);
@@ -444,7 +444,7 @@ task usercontrol() //drive the robot using a controller
 {
 	stopRobot(); //stops robot
 	displayLCDCenteredString(0, "Driver Control");
-	printTeamSide()
+	printTeamSide();
 	while(true) { //run code multiple times
 		updateGyro();
 		//Create "deadzone" for Y1/Ch3
