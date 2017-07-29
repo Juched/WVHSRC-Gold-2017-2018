@@ -30,8 +30,8 @@ float gyroCalibrated = 0;
 float gyroSimple = 0;
 float X2 = 0, Y1 = 0, X1 = 0, threshold = 15;
 float gyroInc = 0;
-float M_PI = 3.14159265359; //pi
-float wheelSize = 4; //in Inches, mec
+//float M_PI = 3.14159265359; //pi
+//float wheelSize = 4; //in Inches, mec
 float accelerometerDistanceX = 0;
 float accelerometerDistanceY = 0;
 float accelerometerVelocityX = 0;
@@ -214,6 +214,22 @@ void selectRobotLocationOnField() { //might have to be in a startTask(TaskID), b
 		}
 	}
 	setCorrectStartingPositionToTheOneThatWasSelected();
+	clearLCDLine(0);
+	clearLCDLine(1);
+}
+
+void printTeamSide() {
+	if(LCDClickCount == 0) {
+		displayLCDCenteredString(1, "Waiting for Task...");
+		} else if (LCDClickCount == 1) {
+		displayLCDCenteredString(1, "..Blue Left..");
+		} else if (LCDClickCount == 2) {
+		displayLCDCenteredString(1, "..Blue Right..");
+		} else if (LCDClickCount == 3) {
+		displayLCDCenteredString(1, "..Red Left..");
+		} else {
+		displayLCDCenteredString(1, "..Red Right..");
+	}
 }
 
 void accessFieldArray(int x, int y) {
@@ -404,13 +420,15 @@ void pre_auton() //runs before robot is ready
 		wait1Msec(1);
 	}
 	clearLCDLine(1);
-	displayLCDCenteredString(0, "Waiting for Task...");
+	selectRobotLocationOnField() // asks for input to tell robot where it is
+	printTeamSide()
 }
 
 
 task autonomous() //program the robot to do stuff
 {
 	displayLCDCenteredString(0, "Autonomous"); //messages are fun :)
+	printTeamSide()
 	//while(true) { // might be needed, might not
 	//moveTo(45, 10, 0); //testing code here and below
 	wait1Msec(2000);
@@ -426,6 +444,7 @@ task usercontrol() //drive the robot using a controller
 {
 	stopRobot(); //stops robot
 	displayLCDCenteredString(0, "Driver Control");
+	printTeamSide()
 	while(true) { //run code multiple times
 		updateGyro();
 		//Create "deadzone" for Y1/Ch3
@@ -458,4 +477,4 @@ task usercontrol() //drive the robot using a controller
 		updateStraight(); //check location, might have to be moved
 	}
 	stopRobot(); //stops robot
-}
+} //end of code
